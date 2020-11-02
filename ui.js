@@ -6,7 +6,6 @@ $(async function() {
   const $favArticles = $('#favorited-articles');
   const $userProfile = $('#user-profile');
 
-
   const $submitForm = $("#submit-form");
   const $loginForm = $("#login-form");
   const $createAccountForm = $("#create-account-form");
@@ -19,7 +18,6 @@ $(async function() {
 
   // global storyList variable
   let storyList = null;
-  const deletedItems = [];
 
   // global currentUser variable
   let currentUser = null;
@@ -81,7 +79,7 @@ $(async function() {
     //  ".far fa-star" is regular, ".fas fa-star" is solid
     if ($(evt.target).attr('class') === "star far fa-star"){
       $(evt.target).attr('class', 'star fas fa-star');
-      currentUser.addFavorite(currentUser, favoriteId);
+      currentUser.addFavorite(currentUser, favoriteId, storyList);
     } else {
       $(evt.target).attr('class', 'star far fa-star');
       currentUser.removeFavorite(currentUser, favoriteId);
@@ -254,12 +252,15 @@ $(async function() {
    */
 
   function generateStoryHTML(story, trashCan) {
-   let hostName = getHostName(story.url);
+    let hostName = getHostName(story.url);
 
-   let starClass = 'star far fa-star';
-   for (let fav of currentUser.favorites){
-    story.url === fav.url ? starClass = 'star fas fa-star"' : starClass;
-   }
+    let starClass = 'star far fa-star';
+    
+    if (currentUser) {
+      for (let fav of currentUser.favorites){
+        story.storyId === fav.storyId ? starClass = "star fas fa-star" : starClass;
+      }
+    }
     
     // render story markup
     const storyMarkup = $(`
@@ -323,6 +324,7 @@ $(async function() {
       localStorage.setItem("username", currentUser.username);
     }
   }
-  console.log(currentUser);
+  // console.log(currentUser);
+  // console.log(storyList);
 });
 

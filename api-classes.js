@@ -173,10 +173,18 @@ class User {
     return existingUser;
   }
 
-  async addFavorite(user, storyId){
+  async addFavorite(user, storyId, storyList){
     await axios.post(`${BASE_URL}/users/${user.username}/favorites/${storyId}`, {
       token: user.loginToken
     });
+    // refresh issue fix from Naomi
+    // update user (ie currentUser) array which is used to write HTML
+    let storyObj = {};
+    for (let story of storyList.stories){
+      storyId === story.storyId ? storyObj = story : storyObj;
+    }
+    let newStory = new Story(storyObj);
+    return user.favorites.push(newStory);
   }
 
   async removeFavorite(user, storyId){
@@ -185,6 +193,12 @@ class User {
         token: user.loginToken
       }
     });
+
+    for (let i=0; i<user.favorites.length; i++){
+      if(storyId === user.favorites[i].storyId){
+        return user.favorites.splice(i, 1);
+      }
+    }
   }
 }
 
