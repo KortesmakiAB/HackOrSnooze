@@ -131,6 +131,10 @@ class User {
       }
     });
 
+    // handle external api
+    if(!response.data || !response.data.user)
+      throw new Error('No user structure');
+
     // build a new User instance from the API response
     const existingUser = new User(response.data.user);
 
