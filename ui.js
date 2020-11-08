@@ -1,5 +1,5 @@
 $(async function() {
-  // cache some selectors we'll be using quite a bit
+  // cache selectors 
   const $allStoriesList = $("#all-articles-list");
   const $filteredArticles = $("#filtered-articles");
   const $ownStories = $("#my-articles");
@@ -25,10 +25,8 @@ $(async function() {
   await checkIfLoggedIn();
 
   /*****************   Event Listeners  *****************/
-    /**
-   * Event handler for Navigation to Homepage
-   */
-
+  
+  // Event handler for Navigation to Homepage
   $("body").on("click", "#nav-all", async function() {
     hideElements();
     await generateStories();
@@ -42,7 +40,7 @@ $(async function() {
   });
 
   $submitForm.on('submit', async function(evt){
-    evt.preventDefault();
+    evt.preventDefault();  // no page-refresh on submit
 
     if (!currentUser) return;
    
@@ -111,9 +109,7 @@ $(async function() {
 
     for (let i = 0; i < currentUser.ownStories.length; i++){
       if (deleteId === currentUser.ownStories[i].storyId){
-        console.log(currentUser.ownStories);
         currentUser.ownStories.splice(i, 1);
-        console.log(currentUser.ownStories);
       }
     }
      
@@ -131,35 +127,25 @@ $(async function() {
     $('#profile-account-date').append(currentUser.createdAt);
   });
 
-  /**
-   * Event listener for logging in.
-   *  If successfully we will setup the user instance
-   */
-
   $loginForm.on("submit", async function(evt) {
-    evt.preventDefault(); // no page-refresh on submit
+    evt.preventDefault();
 
-    // grab the username and password
     const username = $("#login-username").val();
     const password = $("#login-password").val();
 
     // call the login static method to build a user instance
     const userInstance = await User.login(username, password);
+
     // set the global user to the user instance
     currentUser = userInstance;
     syncCurrentUserToLocalStorage();
     loginAndSubmitForm();
   });
 
-  /**
-   * Event listener for signing up.
-   *  If successfully we will setup a new user instance
-   */
-
+  // Event listener for signing up. If successfully we will setup a new user instance
   $createAccountForm.on("submit", async function(evt) {
-    evt.preventDefault(); // no page refresh
+    evt.preventDefault();
 
-    // grab the required fields
     let name = $("#create-account-name").val();
     let username = $("#create-account-username").val();
     let password = $("#create-account-password").val();
@@ -171,20 +157,12 @@ $(async function() {
     loginAndSubmitForm();
   });
 
-  /**
-   * Log Out Functionality
-   */
-
   $navLogOut.on("click", function() {
     // empty out local storage
     localStorage.clear();
     // refresh the page, clearing memory
     location.reload();
   });
-
-  /**
-   * Event Handler for Clicking Login
-   */
 
   $navLogin.on("click", function() {
     // Show the Login and Create Account Forms
@@ -194,11 +172,7 @@ $(async function() {
     $createAccountForm.slideToggle();
   });
 
-
-  /**
-   * On page load, checks local storage to see if the user is already logged in.
-   * Renders page information accordingly.
-   */
+/*****************  Function List  *****************/
 
   async function checkIfLoggedIn() {
     // let's see if we're logged in
@@ -216,31 +190,27 @@ $(async function() {
     }
   }
 
-  /**
-   * A rendering function to run to reset the forms and hide the login info
-   */
-
   function loginAndSubmitForm() {
-    // hide the forms for logging in and signing up
+
     $loginForm.hide();
     $createAccountForm.hide();
 
-    // reset those forms
     $loginForm.trigger("reset");
     $createAccountForm.trigger("reset");
 
-    // show the stories
+    // regenerate html with favorite-stars & show the stories
+    $allStoriesList.empty();
+    for (let story of storyList.stories) {
+      const result = generateStoryHTML(story);
+      $allStoriesList.append(result);
+    }
     $allStoriesList.show();
 
     // update the navigation bar
     showNavForLoggedInUser();
   }
 
-  /**
-   * A rendering function to call the StoryList.getStories static method,
-   *  which will generate a storyListInstance. Then render it.
-   */
-
+  // call the StoryList.getStories static method which will generate a storyListInstance. Then render it.
   async function generateStories() {
     // get an instance of StoryList
     const storyListInstance = await StoryList.getStories();
@@ -256,22 +226,19 @@ $(async function() {
     }
   }
 
-  /**
-   * A function to render HTML for an individual Story instance
-   */
-
+  // render HTML for an individual Story instance
   function generateStoryHTML(story, trashCan) {
     let hostName = getHostName(story.url);
 
     let starClass = 'star far fa-star';
-    
     if (currentUser) {
       for (let fav of currentUser.favorites){
         story.storyId === fav.storyId ? starClass = "star fas fa-star" : starClass;
       }
+    } else {
+      starClass = '';
     }
     
-    // render story markup
     const storyMarkup = $(`
       <li id="${story.storyId}">
         <i class="${starClass}"></i>
@@ -310,8 +277,7 @@ $(async function() {
     $('#nav-user-profile').show().text(currentUser.username);
   }
 
-  /* simple function to pull the hostname from a URL */
-
+  // pull the hostname from a URL
   function getHostName(url) {
     let hostName;
     if (url.indexOf("://") > -1) {
@@ -325,8 +291,7 @@ $(async function() {
     return hostName;
   }
 
-  /* sync current user information to localStorage */
-
+  // sync current user information to localStorage
   function syncCurrentUserToLocalStorage() {
     if (currentUser) {
       localStorage.setItem("token", currentUser.loginToken);
