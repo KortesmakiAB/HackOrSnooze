@@ -54,10 +54,11 @@ $(async function() {
 
     const newStory = await storyList.addStory(currentUser, newStoryFormInfo);
 
+    currentUser.ownStories.push(newStory.data.story);
+
     $submitForm.trigger("reset");
 
-    $allStoriesList.append(newStory);
-    
+    $allStoriesList.append(newStory);    
   });
 
   $navFavorites.on('click', async function(){
@@ -107,6 +108,14 @@ $(async function() {
 
     const deleteId = $(evt.target).closest('li').attr('id');
     storyList.deleteStory(currentUser, deleteId);
+
+    for (let i = 0; i < currentUser.ownStories.length; i++){
+      if (deleteId === currentUser.ownStories[i].storyId){
+        console.log(currentUser.ownStories);
+        currentUser.ownStories.splice(i, 1);
+        console.log(currentUser.ownStories);
+      }
+    }
      
     $(evt.target).closest('li').remove();
   });
