@@ -66,7 +66,8 @@ $(async function() {
     $favArticles.empty();
     
     for (let favStory of currentUser.favorites){
-      const favHTML = generateStoryHTML(favStory);
+      let starClass = 'star fas fa-star';
+      const favHTML = generateStoryHTML(favStory, starClass );
       $favArticles.append(favHTML);
     }
 
@@ -88,13 +89,16 @@ $(async function() {
   $navStories.on('click', function(){
     if (!currentUser) return;
 
-    const trashCan = 'trash-can far fa-trash-alt';
-
     hideElements();
     $ownStories.empty();
     
+    const trashCan = 'trash-can far fa-trash-alt';
     for (let story of currentUser.ownStories){
-      const storyHTML = generateStoryHTML(story, trashCan);
+      let starClass = 'star far fa-star';
+      for (let fav of currentUser.favorites){
+        story.storyId === fav.storyId ? starClass = "star fas fa-star" : starClass;
+      }
+      const storyHTML = generateStoryHTML(story, starClass, trashCan);
       $ownStories.append(storyHTML);
     }
 
@@ -153,11 +157,13 @@ $(async function() {
     // call the create method, which calls the API and then builds a new user instance
     const newUser = await User.create(username, password, name);
     currentUser = newUser;
+
     syncCurrentUserToLocalStorage();
     loginAndSubmitForm();
   });
 
   $navLogOut.on("click", function() {
+    $('#main-nav-links').hide();
     // empty out local storage
     localStorage.clear();
     // refresh the page, clearing memory
@@ -191,19 +197,31 @@ $(async function() {
   }
 
   function loginAndSubmitForm() {
-
     $loginForm.hide();
     $createAccountForm.hide();
 
     $loginForm.trigger("reset");
     $createAccountForm.trigger("reset");
 
+    $('#main-nav-links').show();
+
     // regenerate html with favorite-stars & show the stories
     $allStoriesList.empty();
+
+    // for (let story of storyList.stories) {
+    //   const result = generateStoryHTML(story);
+    //   $allStoriesList.append(result);
+    // }
+
     for (let story of storyList.stories) {
-      const result = generateStoryHTML(story);
+      let starClass = 'star far fa-star';
+      for (let fav of currentUser.favorites){
+        story.storyId === fav.storyId ? starClass = "star fas fa-star" : starClass;
+      }
+      const result = generateStoryHTML(story, starClass);
       $allStoriesList.append(result);
     }
+
     $allStoriesList.show();
 
     // update the navigation bar
@@ -220,24 +238,28 @@ $(async function() {
     $allStoriesList.empty();
 
     // loop through all of our stories and generate HTML for them
-    for (let story of storyList.stories) {
-      const result = generateStoryHTML(story);
-      $allStoriesList.append(result);
+    if (currentUser) {
+      for (let story of storyList.stories) {
+        let starClass = 'star far fa-star'; 
+        for (let fav of currentUser.favorites){
+          story.storyId === fav.storyId ? starClass = "star fas fa-star" : starClass;
+        }
+        const result = generateStoryHTML(story, starClass);
+        $allStoriesList.append(result);
+      }      
+    } 
+    else {
+      for (let story of storyList.stories) {
+        starClass = '';
+        const result = generateStoryHTML(story, starClass);
+        $allStoriesList.append(result);
+      }
     }
   }
 
   // render HTML for an individual Story instance
-  function generateStoryHTML(story, trashCan) {
-    let hostName = getHostName(story.url);
-
-    let starClass = 'star far fa-star';
-    if (currentUser) {
-      for (let fav of currentUser.favorites){
-        story.storyId === fav.storyId ? starClass = "star fas fa-star" : starClass;
-      }
-    } else {
-      starClass = '';
-    }
+  function generateStoryHTML(story, starClass, trashCan) {
+    let hostName = getHostName(story.url);  
     
     const storyMarkup = $(`
       <li id="${story.storyId}">
