@@ -193,6 +193,7 @@ $(async function() {
 
     if (currentUser) {
       showNavForLoggedInUser();
+      $('#main-nav-links').show();
     }
   }
 
