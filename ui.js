@@ -103,10 +103,18 @@ $(async function() {
 
     const deleteId = $(evt.target).closest('li').attr('id');
     storyList.deleteStory(currentUser, deleteId);
-
+    currentUser.removeFavorite(currentUser, deleteId);
+    
     for (let i = 0; i < currentUser.ownStories.length; i++){
       if (deleteId === currentUser.ownStories[i].storyId){
         currentUser.ownStories.splice(i, 1);
+      }
+    }
+
+    for (let i = 0; i < currentUser.favorites.length; i++){
+      if (deleteId === currentUser.favorites[i].storyId){
+        console.log('Hi');
+        currentUser.favorites.splice(i, 1);
       }
     }
      
@@ -298,5 +306,6 @@ $(async function() {
       localStorage.setItem("username", currentUser.username);
     }
   }
+  console.log(currentUser)
 });
 
