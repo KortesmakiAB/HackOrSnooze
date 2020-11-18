@@ -26,7 +26,7 @@ $(async function() {
 
   /*****************   Event Listeners  *****************/
   
-  // Event handler for Navigation to Homepage
+  // Navigation to Homepage
   $("body").on("click", "#nav-all", async function() {
     hideElements();
     await generateStories();
@@ -56,7 +56,7 @@ $(async function() {
 
     $submitForm.trigger("reset");
 
-    $allStoriesList.append(newStory);    
+    $allStoriesList.append(newStory);
   });
 
   $navFavorites.on('click', async function(){
@@ -65,9 +65,9 @@ $(async function() {
     hideElements();
     $favArticles.empty();
     
+    let starClass = "star fas fa-star";
     for (let favStory of currentUser.favorites){
-      let starClass = 'star fas fa-star';
-      const favHTML = generateStoryHTML(favStory, starClass );
+      const favHTML = generateStoryHTML(favStory, starClass);
       $favArticles.append(favHTML);
     }
 
@@ -92,15 +92,10 @@ $(async function() {
     hideElements();
     $ownStories.empty();
     
+    let starClass = 'star far fa-star';
     const trashCan = 'trash-can far fa-trash-alt';
-    for (let story of currentUser.ownStories){
-      let starClass = 'star far fa-star';
-      for (let fav of currentUser.favorites){
-        story.storyId === fav.storyId ? starClass = "star fas fa-star" : starClass;
-      }
-      const storyHTML = generateStoryHTML(story, starClass, trashCan);
-      $ownStories.append(storyHTML);
-    }
+    
+    starClassForStories(currentUser.ownStories, starClass, $ownStories, trashCan);
 
     $ownStories.show();
   });
@@ -124,13 +119,16 @@ $(async function() {
     if (!currentUser) return;
 
     hideElements();
-    $('#user-profile').show();
     
     $('#profile-name').append(currentUser.name);
     $('#profile-username').append(currentUser.username);
     $('#profile-account-date').append(currentUser.createdAt);
+
+    $('#user-profile').show();
   });
 
+  // Event listener for logging in
+  //  If successfull, setup the user instance
   $loginForm.on("submit", async function(evt) {
     evt.preventDefault();
 
@@ -144,9 +142,12 @@ $(async function() {
     currentUser = userInstance;
     syncCurrentUserToLocalStorage();
     loginAndSubmitForm();
+
+    
   });
 
-  // Event listener for signing up. If successfully we will setup a new user instance
+  // Event listener for signing up
+  //  If successful, setup a new user instance
   $createAccountForm.on("submit", async function(evt) {
     evt.preventDefault();
 
@@ -178,8 +179,26 @@ $(async function() {
     $createAccountForm.slideToggle();
   });
 
-/*****************  Function List  *****************/
 
+  /*****************   Functions  *****************/
+  
+  function  starClassForStories(stories, starClass, domLocation, trashCan){
+    for (let story of stories){
+      if (!currentUser){
+        const storyHTML = generateStoryHTML(story);
+        domLocation.append(storyHTML);
+      } else {
+        for (let fav of currentUser.favorites){
+          story.storyId === fav.storyId ? starClass = "star fas fa-star" : starClass;
+        }
+        const storyHTML = generateStoryHTML(story, starClass, trashCan);
+        domLocation.append(storyHTML);
+      }      
+    }
+  }
+
+  // On page load, checks local storage to see if the user is already logged in.
+  //  Renders page information accordingly.
   async function checkIfLoggedIn() {
     // let's see if we're logged in
     const token = localStorage.getItem("token");
@@ -204,25 +223,11 @@ $(async function() {
     $loginForm.trigger("reset");
     $createAccountForm.trigger("reset");
 
-    $('#main-nav-links').show();
-
-    // regenerate html with favorite-stars & show the stories
     $allStoriesList.empty();
+    let starClass = 'star far fa-star';
+    starClassForStories(storyList.stories, starClass, $allStoriesList);
 
-    // for (let story of storyList.stories) {
-    //   const result = generateStoryHTML(story);
-    //   $allStoriesList.append(result);
-    // }
-
-    for (let story of storyList.stories) {
-      let starClass = 'star far fa-star';
-      for (let fav of currentUser.favorites){
-        story.storyId === fav.storyId ? starClass = "star fas fa-star" : starClass;
-      }
-      const result = generateStoryHTML(story, starClass);
-      $allStoriesList.append(result);
-    }
-
+    // show the stories
     $allStoriesList.show();
 
     // update the navigation bar
@@ -239,28 +244,13 @@ $(async function() {
     $allStoriesList.empty();
 
     // loop through all of our stories and generate HTML for them
-    if (currentUser) {
-      for (let story of storyList.stories) {
-        let starClass = 'star far fa-star'; 
-        for (let fav of currentUser.favorites){
-          story.storyId === fav.storyId ? starClass = "star fas fa-star" : starClass;
-        }
-        const result = generateStoryHTML(story, starClass);
-        $allStoriesList.append(result);
-      }      
-    } 
-    else {
-      for (let story of storyList.stories) {
-        starClass = '';
-        const result = generateStoryHTML(story, starClass);
-        $allStoriesList.append(result);
-      }
-    }
+    let starClass = 'star far fa-star';
+    starClassForStories(storyList.stories, starClass, $allStoriesList);
   }
 
-  // render HTML for an individual Story instance
+  // A function to render HTML for an individual Story instance
   function generateStoryHTML(story, starClass, trashCan) {
-    let hostName = getHostName(story.url);  
+    let hostName = getHostName(story.url);
     
     const storyMarkup = $(`
       <li id="${story.storyId}">
@@ -278,8 +268,7 @@ $(async function() {
     return storyMarkup;
   }
 
-  /* hide all elements in elementsArr */
-
+  //  hide all elements in elementsArr
   function hideElements() {
     const elementsArr = [
       $submitForm,
@@ -304,9 +293,9 @@ $(async function() {
   function getHostName(url) {
     let hostName;
     if (url.indexOf("://") > -1) {
-      hostName = url.split("/")[2];   // if no "://" get the text between the 2nd and 3rd "/"?
+      hostName = url.split("/")[2];   // if "://" get the text between the 2nd and 3rd "/"
     } else {
-      hostName = url.split("/")[0];   // otherwise, get the text before the first "/"?
+      hostName = url.split("/")[0];   // otherwise, get the text before the first "/"
     }
     if (hostName.slice(0, 4) === "www.") {  // take everything after www
       hostName = hostName.slice(4);
@@ -321,7 +310,5 @@ $(async function() {
       localStorage.setItem("username", currentUser.username);
     }
   }
-  // console.log(currentUser);
-  // console.log(storyList);
 });
 
