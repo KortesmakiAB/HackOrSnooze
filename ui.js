@@ -92,10 +92,8 @@ $(async function() {
     hideElements();
     $ownStories.empty();
     
-    let starClass = 'star far fa-star';
     const trashCan = 'trash-can far fa-trash-alt';
-    
-    starClassForStories(currentUser.ownStories, starClass, $ownStories, trashCan);
+    starClassForStories(currentUser.ownStories, $ownStories, trashCan);
 
     $ownStories.show();
   });
@@ -127,8 +125,7 @@ $(async function() {
     $('#user-profile').show();
   });
 
-  // Event listener for logging in
-  //  If successfull, setup the user instance
+  // Event listener for logging in. If successful, setup the user instance
   $loginForm.on("submit", async function(evt) {
     evt.preventDefault();
 
@@ -142,12 +139,9 @@ $(async function() {
     currentUser = userInstance;
     syncCurrentUserToLocalStorage();
     loginAndSubmitForm();
-
-    
   });
 
-  // Event listener for signing up
-  //  If successful, setup a new user instance
+  // Event listener for signing up. If successful, setup a new user instance
   $createAccountForm.on("submit", async function(evt) {
     evt.preventDefault();
 
@@ -165,7 +159,7 @@ $(async function() {
 
   $navLogOut.on("click", function() {
     $('#main-nav-links').hide();
-    // empty out local storage
+    
     localStorage.clear();
     // refresh the page, clearing memory
     location.reload();
@@ -182,12 +176,14 @@ $(async function() {
 
   /*****************   Functions  *****************/
   
-  function  starClassForStories(stories, starClass, domLocation, trashCan){
+  function  starClassForStories(stories, domLocation, trashCan){
     for (let story of stories){
       if (!currentUser){
         const storyHTML = generateStoryHTML(story);
         domLocation.append(storyHTML);
-      } else {
+      } 
+      else {
+        let starClass = 'star far fa-star';
         for (let fav of currentUser.favorites){
           story.storyId === fav.storyId ? starClass = "star fas fa-star" : starClass;
         }
@@ -197,10 +193,7 @@ $(async function() {
     }
   }
 
-  // On page load, checks local storage to see if the user is already logged in.
-  //  Renders page information accordingly.
   async function checkIfLoggedIn() {
-    // let's see if we're logged in
     const token = localStorage.getItem("token");
     const username = localStorage.getItem("username");
 
@@ -224,13 +217,12 @@ $(async function() {
     $createAccountForm.trigger("reset");
 
     $allStoriesList.empty();
-    let starClass = 'star far fa-star';
-    starClassForStories(storyList.stories, starClass, $allStoriesList);
+    
+    starClassForStories(storyList.stories, $allStoriesList);
 
-    // show the stories
     $allStoriesList.show();
+    $('#main-nav-links').show();
 
-    // update the navigation bar
     showNavForLoggedInUser();
   }
 
@@ -243,12 +235,10 @@ $(async function() {
     // empty out that part of the page
     $allStoriesList.empty();
 
-    // loop through all of our stories and generate HTML for them
-    let starClass = 'star far fa-star';
-    starClassForStories(storyList.stories, starClass, $allStoriesList);
+    // loop through all stories and generate HTML for them, adding appropriate star class as necessary
+    starClassForStories(storyList.stories, $allStoriesList);
   }
 
-  // A function to render HTML for an individual Story instance
   function generateStoryHTML(story, starClass, trashCan) {
     let hostName = getHostName(story.url);
     
@@ -268,7 +258,6 @@ $(async function() {
     return storyMarkup;
   }
 
-  //  hide all elements in elementsArr
   function hideElements() {
     const elementsArr = [
       $submitForm,
@@ -303,7 +292,6 @@ $(async function() {
     return hostName;
   }
 
-  // sync current user information to localStorage
   function syncCurrentUserToLocalStorage() {
     if (currentUser) {
       localStorage.setItem("token", currentUser.loginToken);
