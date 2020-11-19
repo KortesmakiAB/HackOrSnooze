@@ -62,7 +62,7 @@ class StoryList {
     return postedStory;
   }
 
-  async deleteStory(user, storyId) {
+  async deleteStory(user, storyId) {   
     await axios.delete(`${BASE_URL}/stories/${storyId}`, {
       params: {
         token: user.loginToken 
@@ -177,15 +177,15 @@ class User {
     return existingUser;
   }
 
-  async addFavorite(user, storyId, storyList){
-    await axios.post(`${BASE_URL}/users/${user.username}/favorites/${storyId}`, {
+  async addFavorite(user, favoriteId, storyList){
+    await axios.post(`${BASE_URL}/users/${user.username}/favorites/${favoriteId}`, {
       token: user.loginToken
     });
     // refresh issue fix from Naomi
     // update user (ie currentUser) array which is used to write HTML
     let storyObj = {};
     for (let story of storyList.stories){
-      storyId === story.storyId ? storyObj = story : storyObj;
+      favoriteId === story.storyId ? storyObj = story : storyObj;
     }
     let newStory = new Story(storyObj);
     return user.favorites.push(newStory);

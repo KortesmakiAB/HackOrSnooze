@@ -33,10 +33,14 @@ $(async function() {
     $allStoriesList.show();
   });
   
-  $navSubmit.on('click', function(){
+  $navSubmit.on('click', async function(){
     if (!currentUser) return;
     hideElements();
     $submitForm.show();
+
+    $allStoriesList.empty()
+    await generateStories();
+    $allStoriesList.show();
   });
 
   $submitForm.on('submit', async function(evt){
@@ -51,8 +55,8 @@ $(async function() {
     const newStoryFormInfo = {author, title, url};
 
     const newStory = await storyList.addStory(currentUser, newStoryFormInfo);
-
     currentUser.ownStories.push(newStory.data.story);
+    await generateStories();
 
     $submitForm.trigger("reset");
 
@@ -103,7 +107,6 @@ $(async function() {
 
     const deleteId = $(evt.target).closest('li').attr('id');
     storyList.deleteStory(currentUser, deleteId);
-    currentUser.removeFavorite(currentUser, deleteId);
     
     for (let i = 0; i < currentUser.ownStories.length; i++){
       if (deleteId === currentUser.ownStories[i].storyId){
@@ -112,12 +115,11 @@ $(async function() {
     }
 
     for (let i = 0; i < currentUser.favorites.length; i++){
-      if (deleteId === currentUser.favorites[i].storyId){
-        console.log('Hi');
+      if(deleteId === currentUser.favorites[i].storyId){
         currentUser.favorites.splice(i, 1);
       }
     }
-     
+
     $(evt.target).closest('li').remove();
   });
 
@@ -213,7 +215,6 @@ $(async function() {
 
     if (currentUser) {
       showNavForLoggedInUser();
-      $('#main-nav-links').show();
     }
   }
 
@@ -284,6 +285,7 @@ $(async function() {
     $navLogin.hide();
     $navLogOut.show();
     $('#nav-user-profile').show().text(currentUser.username);
+    $('#main-nav-links').show();
   }
 
   // pull the hostname from a URL
@@ -306,6 +308,5 @@ $(async function() {
       localStorage.setItem("username", currentUser.username);
     }
   }
-  console.log(currentUser)
 });
 
